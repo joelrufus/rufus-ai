@@ -31,12 +31,20 @@
 
         // Function to detect and format lists, code, and inline formatting
         function formatText(text) {
-            return text
-                .replace(/`{3}(.*?)`{3}/gs, '<pre><code>$1</code></pre>')  // Triple backticks for code blocks
-                .replace(/`(.*?)`/g, '<code>$1</code>')  // Single backticks for inline code
-                .replace(/\n\* (.+?)(?=\n|$)/g, '<ul><li>$1</li></ul>')  // Bullet points
-                .replace(/\n\d+\.\s(.+?)(?=\n|$)/g, '<ol><li>$1</li></ol>'); // Numbered lists
-        }
+    return text
+        // Handle multiline code blocks (triple backticks)
+        .replace(/`{3}(.*?)`{3}/gs, '<pre><code>$1</code></pre>')
+
+        // Handle inline code (single backticks)
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+
+        // Handle bullet points (*)
+        .replace(/\n\* (.+?)(?=\n|$)/g, '<ul><li>$1</li></ul>')
+
+        // Handle numbered lists (1., 2., ...)
+        .replace(/\n(\d+)\.\s(.+?)(?=\n|$)/g, '<ol start="$1"><li>$2</li></ol>');
+}
+
 
         // Function to send user messages to the Flask backend
         async function sendMessage() {
