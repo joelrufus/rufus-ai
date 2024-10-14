@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rufus Chatbot</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <h1>Rufus Chatbot 🤖</h1>
+            <p>Your friendly Computer Science & Math tutor!</p>
+        </header>
+        <div id="chatbox" class="chatbox"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off" />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Function to display messages in the chatbox
+        function displayMessage(sender, message) {
+            const chatbox = document.getElementById('chatbox');
+            const formattedMessage = formatText(message); // Format structured text
+            chatbox.innerHTML += `<div class="message ${sender}-message"><span>${sender === 'user' ? 'You' : 'Rufus'}:</span> ${formattedMessage}</div>`;
+            chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to the latest message
+        }
+
+        // Function to detect and format lists, code, and inline formatting
+        function formatText(text) {
+            return text
+                .replace(/`{3}(.*?)`{3}/gs, '<pre><code>$1</code></pre>')  // Triple backticks for code blocks
+                .replace(/`(.*?)`/g, '<code>$1</code>')  // Single backticks for inline code
+                .replace(/\n\* (.+?)(?=\n|$)/g, '<ul><li>$1</li></ul>')  // Bullet points
+                .replace(/\n\d+\.\s(.+?)(?=\n|$)/g, '<ol><li>$1</li></ol>'); // Numbered lists
+        }
+
+        // Function to send user messages to the Flask backend
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput').value;
+            if (userInput.trim() === "") return; // Ignore empty input
+
+            displayMessage('user', userInput); // Display user message
+            document.getElementById('userInput').value = ""; // Clear input field
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userInput }),
+                });
+
+                const data = await response.json();
+                displayMessage('bot', data.reply); // Display Rufus's response
+            } catch (error) {
+                displayMessage('bot', "Oops! Something went wrong.");
+            }
+        }
+
+        // Start Rufus's greeting when the page loads
+        window.onload = () => {
+            const greeting = "Hi! I am Rufus, your friendly educational assistant. I can help you with computer science and math. What would you like to learn today?";
+            displayMessage('bot', greeting);
+        };
+    </script>
+</body>
+</html>
